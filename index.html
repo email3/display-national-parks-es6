@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style type="text/css">
+      .park {
+        clear: left;
+        margin: 20px;
+      }
+      .parkThumnail,
+      .content {
+        float: left;
+        padding-bottom: 20px;
+      }
+      .parkThumnail {
+        width: 20%;
+      }
+      .content {
+        width: 80%;
+      }
+    </style>
+    <script type="text/javascript">
+      var Parks = (function() {
+        let JSONdata = null;
+        const dataSetUrl = 'http://www.chaseandchambers.com/parks.json',
+          proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+
+        // Do initalization stuff here.
+        var init = function() {
+          hydrate();
+        };
+
+        // Load the JSON data into local variable
+        var hydrate = function() {
+          document.querySelector('#root').innerHTML = 'Loading dataset';
+
+          // The JSON URL had CORS on it, so I used a proxy to bypass that for this test since I have no control over the response headers for the resource.
+          fetch(proxyUrl + dataSetUrl)
+            .then(response => {
+              return response.json();
+            })
+            .then(data => {
+              JSONdata = data;
+              // Whenver we update the data set, rerender the new data.
+              render();
+            })
+            .catch(e => {
+              console.log(e);
+              return e;
+            });
+        };
+        /* This function allows us to get the property of a JSON object as a template literal. */
+        function sanatizeData(obj, property) {
+          return obj[property];
+        }
+        // Display JSON data on-screen
+        var render = function() {
+          const parksList = `
+                        <div class="parks">
+                        ${JSONdata.map(
+                          park =>
+                            `<div class="park">
+                               <div class="parkThumnail">
+                                 <a href="${sanatizeData(
+                                   park,
+                                   'Image'
+                                 )}" class="avatar" target="parkImage"><img alt="Thumbnail" src=${sanatizeData(
+                              park,
+                              'Thumbnail'
+                            )} /></a>
+                               </div>
+                               <div class="content">
+                                  <h3>${sanatizeData(park, 'Name')}</h3>
+                                  <div class="description">${sanatizeData(
+                                    park,
+                                    'Description'
+                                  )}</div>
+                                  <div class="metadata">
+                                  <div class="location">Location: ${sanatizeData(
+                                    park,
+                                    'Location'
+                                  )}</div>
+                                  <div class="established">Established: ${sanatizeData(
+                                    park,
+                                    'Established'
+                                  )}</div>
+                                  <div class="area">Area: ${sanatizeData(
+                                    park,
+                                    'Area'
+                                  )}</div>
+                                  <div class="recreationVisitors">Visitors: ${sanatizeData(
+                                    park,
+                                    'Recreation visitors'
+                                  )}</div>
+                               </div>
+                            </div>
+                          </div>`
+                        ).join('')}
+                        </div>`;
+
+          document.querySelector('#root').innerHTML = parksList;
+        };
+
+        return {
+          init: init
+        };
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+  <script type="text/javascript">
+    Parks.init();
+  </script>
+</html>
